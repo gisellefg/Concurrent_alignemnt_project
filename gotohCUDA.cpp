@@ -10,43 +10,189 @@
 #include <queue>
 #include <functional>
 
-#define idx(i, j, w) ((i) * (w) + (j))
+#define IDX(i, j, w) ((i) * (w) + (j))
 
 
 
 __global__
+
+
 void gotohAUX2(int diag, int m, int n, const char* A,
     const char* B,
     int openGap,
-    int extendGap, const int* submat){
-          size_t index = blockIdx.x * blockDim.x + threadIdx.x;
-          int i = max(1, diag-n) + index;
-          int j = diag - i;
+    int extendGap, const int* submat,
+               int* M, int* I, int* D, int*traceM, int* traceI, int*traceD){
+            size_t index = blockIdx.x * blockDim.x + threadIdx.x;
+            int i = max(1, diag-n) + index;
+            int j = diag - i;
 
+            if (i > m || j < 1 || j > n) return;
+
+            int width = n + 1;
+            int idx       = IDX(i, j, width);
+            int up        = IDX(i - 1, j, width);
+            int left      = IDX(i, j - 1, width);
+            int diagPrev  = IDX(i - 1, j - 1, width);
+
+
+
+            int sub = submat[(int)A[i - 1] * 128 + (int)B[j - 1]];
+
+            // Compute I (insertion score)
+            //Here we open new gap vertically
+            int openI = M[up] - (openGap + extendGap);
+            //Extend existing vertical gap
+            int extI  = I[up] - extendGap;
+            if (openI >= extI) {
+                I[idx] = openI;
+                traceI[idx] = 0; 
+            } else {
+                I[idx] = extI;
+                traceI[idx] = 1;
+            }
+
+            
+            // Compute D (deletion score)
+            int openD = M[left] - (openGap + extendGap);
+            int extD  = D[left] - extendGap;
+            if (openD >= extD) {
+                D[idx] = openD;
+                traceD[idx] = 0;
+            } else {
+                D[idx] = extD;
+                traceD[idx] = 1;
+            }
+
+
+
+            // Compute M (match/mismatch score)
+            //We have three possibilities here: match/mismatch from M, gap from I or gap from D
+            int diagS = M[diagPrev] + sub;
+
+            if (diagS >= I[idx] && diagS >= D[idx]) {
+                M[idx] = M[diagPrev] + sub;
+                traceM[idx] = 0;
+
+            } else if (I[idx] >= D[idx]) {
+                M[idx] = I[idx];
+                traceM[idx] = 1;
+
+            } else {
+                M[idx] = D[idx];
+                traceM[idx] = 2;
+            }
 
     }
 
-void gotoch_align_cuda(const string&A, const string &B, int openGap, int extendHap,  const vector<vector<int>> &submat) {
+    
+void gotoch_align_cuda(const string&A, const string &B, int openGap, int extendGap, const std::vector<std::vector<int>> &submat) {
     
     const int THREADS_PER_BLOCK = 128;
-    
-    
     const int NEG_INF = numeric_limits<int>::min()/2;
+
+    
+    char *d_A, *d_B;
+    int *d_M, *d_I, *d_D, *d_submat;
+    int *d_traceM, *d_traceI, *d_traceD;
+
+    
+
+    
     const int m = A.size();
     const int n = B.size();
     const int width = n + 1;
     const int size = (m + 1) * (n + 1);
 
+    //Flatten substition matrix (code received from CHATGPT)
+    std::vector<int> flatSubmat(128 * 128, 0);
+    for (int i = 0; i < 128; ++i)
+        for (int j = 0; j < 128; ++j)
+            flatSubmat[i * 128 + j] = submat[i][j];
 
-    //here we are allocating host flattened matrices
+    
+    
+
+    //here we are allocating host flattened matrices (HOST)
     vector<int> hM(size, NEG_INF);
     vector<int> hI(size, NEG_INF);
     vector<int> hD(size, NEG_INF);
+    hM[0] = hI[0] = hD[0] = 0;
+
+
+    vector<int> hTraceM(size);
+    vector<int> hTraceI(size);
+    vector<int> hTraceD(size);
+
+
+
+    
+
+
+    // Allocate to host
+    cudaMalloc(&d_A, m*sizeof(char));
+    cudaMalloc(&d_B, n*sizeof(char));
+    cudaMemcpy(d_A, A.c_str(), m, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, B.c_str(), n, cudaMemcpyHostToDevice);
+
+    cudaMalloc(&d_M, size * sizeof(int));
+    cudaMalloc(&d_I, size * sizeof(int));
+    cudaMalloc(&d_D, size * sizeof(int));
+    cudaMemcpy(d_M, hM.data(), size * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_I, hI.data(), size * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_D, hD.data(), size * sizeof(int), cudaMemcpyHostToDevice);
+
+    cudaMalloc(&d_submat, 128 * 128 * sizeof(int));
+    cudaMemcpy(d_submat, flatSubmat.data(), 128 * 128 * sizeof(int), cudaMemcpyHostToDevice); 
+
+
+    //traceback matrices
+    cudaMalloc(&d_traceM, size * sizeof(int));
+    cudaMalloc(&d_traceI, size * sizeof(int));
+    cudaMalloc(&d_traceD, size * sizeof(int));
+
+    //Compute on GPU, we launch kernels for each diagonal
+    for (int diag = 2; diag <= m + n; ++diag){
+        int i_min = max(1, diag - n);
+        int i_max = min(m, diag - 1);
+        int total = i_max - i_min + 1;
+        if (total <= 0) continue;
+
+        int blocks = (total + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+    
+        gotohAUX2<<<blocks, THREADS_PER_BLOCK>>>(diag, m, n, d_A, d_B,
+                                         openGap, extendGap, d_submat,
+                                         d_M, d_I, d_D,
+                                         d_traceM, d_traceI, d_traceD);
+
+
+        cudaDeviceSynchronize();
+
+
+    }
+
+    //Results back to host
+    cudaMemcpy(hM.data(), d_M, size * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(hI.data(), d_I, size * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(hD.data(), d_D, size * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(hTraceM.data(), d_traceM, size * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(hTraceI.data(), d_traceI, size * sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(hTraceD.data(), d_traceD, size * sizeof(int), cudaMemcpyDeviceToHost);
+
+
+
+    //Free CUDA memory
+    cudaFree(d_A);
+    cudaFree(d_B);
+    cudaFree(d_M);
+    cudaFree(d_I);
+    cudaFree(d_D);
+    cudaFree(d_traceM);
+    cudaFree(d_traceI);
+    cudaFree(d_traceD);
+    cudaFree(d_submat);
 
 }
   
 
     
-
-    //mobving data to device
 
