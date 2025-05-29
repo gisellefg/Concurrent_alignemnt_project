@@ -14,10 +14,20 @@
 
 
 
-__global__
+
+//For comparing results 
+struct AlignmentResult {
+    int maxscore;
+    std::string sequenceA;
+    std::string sequenceB;
+
+};
 
 
-void gotohAUX2(int diag, int m, int n, const char* A,
+
+
+//Computes one anti-diagonal
+__global__ void gotohAUX2(int diag, int m, int n, const char* A,
     const char* B,
     int openGap,
     int extendGap, const int* submat,
@@ -84,7 +94,6 @@ void gotohAUX2(int diag, int m, int n, const char* A,
 
     }
 
-    
 void gotoch_align_cuda(const string&A, const string &B, int openGap, int extendGap, const std::vector<std::vector<int>> &submat) {
     
     const int THREADS_PER_BLOCK = 128;
@@ -179,6 +188,9 @@ void gotoch_align_cuda(const string&A, const string &B, int openGap, int extendG
     cudaMemcpy(hTraceD.data(), d_traceD, size * sizeof(int), cudaMemcpyDeviceToHost);
 
 
+    // compare values of different matrices
+
+
 
     //Free CUDA memory
     cudaFree(d_A);
@@ -192,6 +204,40 @@ void gotoch_align_cuda(const string&A, const string &B, int openGap, int extendG
     cudaFree(d_submat);
 
 }
+
+AlignmentResult gotoch_align_result(const std::string& A, const std::string& B,
+                                const std::vector<int>& hM,
+                                const std::vector<int>& hI,
+                                const std::vector<int>& hD,
+                                const std::vector<int>& hTraceM,
+                                const std::vector<int>& hTraceI,
+                                const std::vector<int>& hTraceD,
+                                int m, int n, int width) {
+    auto IDX = [width](int i, int j) { return i * width + j; };
+
+
+    int end = IDX(m, n, width);
+    int score_D = hD[end];
+    int score_M = hM[end];
+    int score_I = hI[end];
+    int score;
+    char chosen;
+
+    if (score_M >= score_I && score_M >= score_D) {
+        score = score_M;
+        chosen = 'M';
+    } else if (score_D >= score_I) {
+        score = score_D;
+        chosen = 'D';
+    }else {
+        score = score_I;
+        chosen = 'I';
+    }
+
+    //TO DO: add traceback logic as in CPU
+
+
+                                }
   
 
     
