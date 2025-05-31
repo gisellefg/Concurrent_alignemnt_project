@@ -301,7 +301,7 @@ int main(int argc, char** argv) {
 
     // Simple match/mismatch matrix for nucleotides
     vector<vector<int>> submat(128, vector<int>(128, -1));
-for (char c : {'A','C','G','T'}) submat[c][c] = 1;
+    for (char c : {'A','C','G','T'}) submat[c][c] = 1;
 
     Alignment result = gotoh_align(A, B, 10, 1, submat);
 
