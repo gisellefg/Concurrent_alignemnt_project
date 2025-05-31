@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Build CUDA Program",
+        "type": "shell",
+        "command": "/usr/local/cuda/bin/nvcc", 
+        "args": [
+          "gotohCUDA.cu",
+          "-o",
+          "gotohCUDA",
+          "-arch=sm_75"
+        ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "problemMatcher": ["$gcc"]
+      }
+    ]
+  }
