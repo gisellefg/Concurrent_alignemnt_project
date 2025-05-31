@@ -1,11 +1,18 @@
-CPU code is first compiled with g++ -std=c++17 -03 gotohCPU.cpp -pthread -o gotoh
+CPU code:
+
+first compiled with g++ -std=c++17 -03 gotohCPU.cpp -pthread -o gotoh
 then it is run with ./gotoh seqA.fasta seqB.fasta n
 
 here for n u can put any number u want i tested with 4
 
 
-GPU compilation and running:
+GPU compilation and running: (remember to uncomment main function)
 
-run first:
 /usr/local/cuda/bin/nvcc gotohCUDA.cu -o gotohCUDA -arch=sm_75
-then: ./gotohCUDA 
+./gotohCUDA 
+
+
+Running main.cpp (runs GPU and CPU at the same time and compares)
+
+ nvcc -std=c++17 -O3 -I$CUDA_HOME/include -L$CUDA_HOME/lib64 gotohCUDA.cu main.cpp gotohCPU.cpp -o benchmark
+ ./benchmark

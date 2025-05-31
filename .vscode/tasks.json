@@ -4,12 +4,12 @@
       {
         "label": "Build CUDA Program",
         "type": "shell",
-        "command": "/usr/local/cuda/bin/nvcc",  // or "nvcc" if it's in PATH
+        "command": "/usr/local/cuda/bin/nvcc", 
         "args": [
           "gotohCUDA.cu",
           "-o",
           "gotohCUDA",
-          "-arch=sm_75"  // Replace with your actual GPU architecture
+          "-arch=sm_75"
         ],
         "group": {
           "kind": "build",

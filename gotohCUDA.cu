@@ -9,13 +9,16 @@
 #include <condition_variable>
 #include <queue>
 #include <functional>
+#include "gotohCUDA.h"
+#include "types.h"
+
 #include <cuda_runtime.h>
 #include <cuda.h>
 using namespace std;
 
 #define IDX(i, j, w) ((i) * (w) + (j))
 
-
+/*
 //this function is a function to read fasta file, i used GPT to write it
 string fastaReader(const string &path) {
     ifstream in(path);
@@ -27,6 +30,7 @@ string fastaReader(const string &path) {
     }
     return seq;
 }
+*/
 
 //For comparing results 
 struct AlignmentResult {
@@ -37,7 +41,6 @@ struct AlignmentResult {
     AlignmentResult(const std::string& a, const std::string& b, int s)
         : A_aligned(a), B_aligned(b), score(s) {}
 
-
 };
 
 // for transferring variables between function calls
@@ -46,7 +49,6 @@ struct AlignmentMatrices {
     std::vector<int> traceM, traceI, traceD;
     int m, n, width;
 };
-
 
 
 //Computes one anti-diagonal
@@ -329,7 +331,38 @@ AlignmentResult gotoch_align_result(const std::string& A, const std::string& B,
     return AlignmentResult(A_aligned, B_aligned, score);
 }
 
+// computes the alignment score for a pair of sequences, where the score depends on how we give weights to different operations
+// so open gap, extend gap, match, and mismatch
+// the function calculates, in milliseconds, how long finding the alignment takes with the GPU implementation
+ScoreTime alignGPU(const std::string& A, const std::string& B,
+            const int openGap, const int extendGap,
+            const int match, const int mismatch) {
 
+    vector<vector<int>> submat(128, vector<int>(128, mismatch)); // initialize submatrix
+    for (char c : {'A','C','G','T'}) submat[c][c] = match;
+
+    cudaEvent_t gpu_start, gpu_end;
+    cudaEventCreate(&gpu_start);
+    cudaEventCreate(&gpu_end);
+
+    cudaEventRecord(gpu_start); // start time
+    // get result
+    AlignmentMatrices ms = gotoch_align_cuda(A, B, openGap, extendGap, submat);
+    AlignmentResult result = gotoch_align_result(A, B, ms.M, ms.I, ms.D, ms.traceM, ms.traceI, ms.traceD, ms.m, ms.n, ms.width);
+    cudaEventRecord(gpu_end); // end time
+    cudaEventSynchronize(gpu_end);
+
+    float gpu_time_ms;
+    cudaEventElapsedTime(&gpu_time_ms, gpu_start, gpu_end);
+    
+    // return object with alignment score and time taken
+    ScoreTime res{result.score,gpu_time_ms};
+
+    return res;
+}
+
+
+/*
 int main() {
 
     //testing code with input strings
@@ -346,18 +379,30 @@ int main() {
     vector<vector<int>> submat(128, vector<int>(128, mismatch));
     for (char c : {'A','C','G','T'}) submat[c][c] = match;
 
-    // get results (body of code)
+    // timing
+    cudaEvent_t gpu_start, gpu_end;
+    cudaEventCreate(&gpu_start);
+    cudaEventCreate(&gpu_end);
+
+    cudaEventRecord(gpu_start);
     AlignmentMatrices ms = gotoch_align_cuda(A, B, openGap, extendGap, submat);
     AlignmentResult result = gotoch_align_result(A, B, ms.M, ms.I, ms.D, ms.traceM, ms.traceI, ms.traceD, ms.m, ms.n, ms.width);
+    cudaEventRecord(gpu_end);
+    cudaEventSynchronize(gpu_end);
 
+    float gpu_time_ms;
+    cudaEventElapsedTime(&gpu_time_ms, gpu_start, gpu_end);
+    std::cout << "GPU Time: " << gpu_time_ms / 1000.0 << " s\n";
+
+    // get results (body of code)
+   
     std::cout << "Aligned A: " << result.A_aligned << "\n";
     std::cout << "Aligned B: " << result.B_aligned << "\n";
     std::cout << "Alignment score: " << result.score << "\n";
 
     return 0;
 }
-  
-
+*/
     
 
 

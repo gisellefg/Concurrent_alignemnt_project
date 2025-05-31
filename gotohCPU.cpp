@@ -9,6 +9,8 @@
 #include <condition_variable>
 #include <queue>
 #include <functional>
+#include "types.h"
+#include "gotohCPU.h"
 using namespace std; //i used this bcs i keep forgetting to add std::
 
 struct Alignment { 
@@ -18,6 +20,10 @@ struct Alignment {
 
 enum Matrix { matM, matI, matD }; //i use this later to mark which DP part is being done in the backtracking
 /*matM is matrix for (mis)match, matI is inserttion (so gap in B) and matD is deletion which marks gap in A*/
+
+/*
+// i commented this and copied it into main.cpp
+
 
 //this function is a function to read fasta file, i used GPT to write it
 string fastaReader(const string &path) {
@@ -30,6 +36,7 @@ string fastaReader(const string &path) {
     }
     return seq;
 }
+*/
 
 class Threads {
     vector<thread> workers;
@@ -289,6 +296,32 @@ Alignment gotoh_align(
     return {Aaligned, Baligned, final_score};
 }
 
+// computes the alignment score for a pair of sequences, where the score depends on how we give weights to different operations
+// so open gap, extend gap, match, and mismatch
+// the function calculates, in milliseconds, how long finding the alignment takes
+ScoreTime alignCPU(const std::string& A, const std::string& B,
+    const int openGap, const int extendGap,
+    const int match, const int mismatch) {
+
+
+    // initiliaize submatrix
+    vector<vector<int>> submat(128, vector<int>(128, mismatch)); 
+    for (char c : {'A','C','G','T'}) submat[c][c] = match;
+
+    // take time
+    auto cpu_start = std::chrono::high_resolution_clock::now();
+    Alignment result = gotoh_align(A, B, openGap, extendGap, submat);
+    auto cpu_end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> cpu_time = cpu_end - cpu_start;
+    //std::cout << "CPU Time: " << cpu_time.count() << " s\n";
+    
+    // return a structure with score and time taken to get score, defined in types.h
+    ScoreTime res = ScoreTime(result.score,cpu_time.count()*1000);
+
+    return res;
+}
+
+/*
 //i used GPT to give me simple main function 
 int main(int argc, char** argv) {
     if (argc < 3) {
@@ -299,11 +332,22 @@ int main(int argc, char** argv) {
     string A = fastaReader(argv[1]);
     string B = fastaReader(argv[2]);
 
-    // Simple match/mismatch matrix for nucleotides
-    vector<vector<int>> submat(128, vector<int>(128, -1));
-    for (char c : {'A','C','G','T'}) submat[c][c] = 1;
+    // parameters for scoring alignment
+    int openGap = 10;
+    int extendGap = 1;
+    int match = 3;
+    int mismatch = -1;
 
-    Alignment result = gotoh_align(A, B, 10, 1, submat);
+    // Simple match/mismatch matrix for nucleotides
+    vector<vector<int>> submat(128, vector<int>(128, mismatch));
+    for (char c : {'A','C','G','T'}) submat[c][c] = match;
+
+    // timing
+    auto cpu_start = std::chrono::high_resolution_clock::now();
+    Alignment result = gotoh_align(A, B, openGap, extendGap, submat);
+    auto cpu_end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> cpu_time = cpu_end - cpu_start;
+    std::cout << "CPU Time: " << cpu_time.count() << " s\n";
 
     cout << "Score: " << result.score << "\n";
     cout << "A: " << result.alignedA << "\n";
@@ -311,3 +355,4 @@ int main(int argc, char** argv) {
 
     return 0;
 }
+    */
