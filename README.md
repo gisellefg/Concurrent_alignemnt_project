@@ -6,7 +6,7 @@ then it is run with ./gotoh seqA.fasta seqB.fasta n
 here for n u can put any number u want i tested with 4
 
 
-GPU compilation and running: (remember to uncomment main function)
+GPU compilation and running: (remember to uncomment main function and fastaReader)
 
 /usr/local/cuda/bin/nvcc gotohCUDA.cu -o gotohCUDA -arch=sm_75
 ./gotohCUDA 
@@ -14,8 +14,16 @@ GPU compilation and running: (remember to uncomment main function)
 
 Running main.cpp (runs GPU and CPU at the same time and compares)
 
+
+(Making sure CUDA_HOME is set might be needed: 
+ export CUDA_HOME=/usr/local/cuda
+ export PATH=$CUDA_HOME/bin:$PATH
+ export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH)
+
+Compile the benchmark with:
  nvcc -std=c++17 -O3 -I$CUDA_HOME/include -L$CUDA_HOME/lib64 gotohCUDA.cu main.cpp gotohCPU.cpp -o benchmark
+Run the program with
  ./benchmark
 
- Example output:
+Example output:
 Scores (CPU/GPU): 208  208 Times taken: 14.2469 ms (CPU) 8.09587 ms (GPU). Speedup: 1.75978

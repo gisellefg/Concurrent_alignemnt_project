@@ -18,7 +18,9 @@ using namespace std;
 
 #define IDX(i, j, w) ((i) * (w) + (j))
 
+
 /*
+
 //this function is a function to read fasta file, i used GPT to write it
 string fastaReader(const string &path) {
     ifstream in(path);
@@ -30,6 +32,7 @@ string fastaReader(const string &path) {
     }
     return seq;
 }
+
 */
 
 //For comparing results 
@@ -362,8 +365,13 @@ ScoreTime alignGPU(const std::string& A, const std::string& B,
 }
 
 
+
 /*
+
+
 int main() {
+
+
 
     //testing code with input strings
     std::string A = fastaReader("seqA.fasta");
@@ -400,10 +408,12 @@ int main() {
     std::cout << "Aligned B: " << result.B_aligned << "\n";
     std::cout << "Alignment score: " << result.score << "\n";
 
+
     return 0;
 }
-*/
+
     
+*/
 
 
   
