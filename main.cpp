@@ -25,40 +25,32 @@ struct Strings {
     std::string B;
 };
 
-/*
 
 
-The score return types aren't correct here
-I'll edit and revisit these functions when I want to test like 100s of sequences at once, for now I'm comparing one sequence pair at a time
+
+
+// Batch Test functions are for computing computation times of large batches of sequences at once. Separate implementations for CPU and GPU.
 
 void BatchTestCPU(const std::vector<Strings>& seqs, const int open, const int extend, const int match, const int mismatch) {
     for (size_t i = 0; i < seqs.size(); ++i) {
-        auto start = std::chrono::high_resolution_clock::now();
-        int score = alignCPU(seqs[i].A, seqs[i].B, open, extend, match, mismatch);
+        ScoreTime scoretime = alignCPU(seqs[i].A, seqs[i].B, open, extend, match, mismatch);
 
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> elapsed = end - start;
-
-        std::cout << "test:  " << i+1 << " score (CPU): " << score 
-                  << " time taken: " << elapsed.count() << " ms" << std::endl;
+        std::cout << "test:  " << i+1 << " score (CPU): " << scoretime.score 
+                  << " time taken: " << scoretime.time << " ms" << std::endl;
     }
 }
 
 void BatchTestGPU(const std::vector<Strings>& seqs, const int open, const int extend, const int match, const int mismatch) {
     for (size_t i = 0; i < seqs.size(); ++i) {
-        auto start = std::chrono::high_resolution_clock::now();
-        int score = alignGPU(seqs[i].A, seqs[i].B, open, extend, match, mismatch);
+        ScoreTime scoretime = alignGPU(seqs[i].A, seqs[i].B, open, extend, match, mismatch);
 
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> elapsed = end - start;
-
-        std::cout << "test: " << i+1 << " score (GPU): " << score 
-                  << " time taken: " << elapsed.count() << " ms" << std::endl;
+        std::cout << "test: " << i+1 << " score (GPU): " << scoretime.score 
+                  << " time taken: " << scoretime.time << " ms" << std::endl;
     }
 }
-*/
 
-// compare the CPU and GPU run times for one pair of sequences
+
+// compare the CPU and GPU run times for ONE pair of sequences (not a batch test)
 void testCPUandGPU(const Strings& seqs, const int open, const int extend, const int match, const int mismatch) {
         // get CPU run time
         ScoreTime cpu_st = alignCPU(seqs.A, seqs.B, open, extend, match, mismatch);
@@ -108,3 +100,5 @@ int main() {
 
     return 0;
 }
+
+// Example output: Scores (CPU/GPU): 208  208 Times taken: 14.2469 ms (CPU) 8.09587 ms (GPU). Speedup: 1.75978

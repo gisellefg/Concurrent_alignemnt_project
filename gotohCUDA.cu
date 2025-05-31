@@ -356,7 +356,7 @@ ScoreTime alignGPU(const std::string& A, const std::string& B,
     cudaEventElapsedTime(&gpu_time_ms, gpu_start, gpu_end);
     
     // return object with alignment score and time taken
-    ScoreTime res{result.score,gpu_time_ms};
+    ScoreTime res = ScoreTime(result.score,gpu_time_ms);
 
     return res;
 }

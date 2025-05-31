@@ -16,3 +16,6 @@ Running main.cpp (runs GPU and CPU at the same time and compares)
 
  nvcc -std=c++17 -O3 -I$CUDA_HOME/include -L$CUDA_HOME/lib64 gotohCUDA.cu main.cpp gotohCPU.cpp -o benchmark
  ./benchmark
+
+ Example output:
+Scores (CPU/GPU): 208  208 Times taken: 14.2469 ms (CPU) 8.09587 ms (GPU). Speedup: 1.75978
