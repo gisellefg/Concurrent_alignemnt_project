@@ -7,6 +7,7 @@
 #include "gotohCUDA.h"
 #include "types.h"
 #include<chrono>
+#include "fasta_reader.cpp"
 using namespace std;
 
 string fastaReader(const string &path) {
@@ -121,26 +122,32 @@ ScoreTime alignNW_Affine(const std::string& A, const std::string& B,
 // compare the CPU and GPU run times for ONE pair of sequences (not a batch test)
 void testCPUandGPU(const Strings& seqs, const int open, const int extend, const int match, const int mismatch) {
         // get CPU run time
+        //std::cout << "running cpu" << std::endl;
         ScoreTime cpu_st = alignCPU(seqs.A, seqs.B, open, extend, match, mismatch);
         // get GPU run time
+        //std::cout << "running gpu" << std::endl;
         ScoreTime gpu_st = alignGPU(seqs.A, seqs.B, open, extend, match, mismatch);
         // get sequential run time
-        ScoreTime nw_affine = alignNW_Affine(seqs.A, seqs.B, match, mismatch, open, extend);
+        //std::cout << "running sequential" << std::endl;
+        //ScoreTime nw_affine = alignNW_Affine(seqs.A, seqs.B, match, mismatch, open, extend);
 
         // Speedups
     float speedup_gpu_vs_cpu = cpu_st.time / gpu_st.time;
-    float speedup_seq_vs_gpu = nw_affine.time / gpu_st.time;
-    float speedup_seq_vs_cpu = nw_affine.time / cpu_st.time;
+    //float speedup_seq_vs_gpu = nw_affine.time / gpu_st.time;
+    //float speedup_seq_vs_cpu = nw_affine.time / cpu_st.time;
 
-    std::cout << "\n=== Alignment Comparison ===\n";
-    std::cout << "Sequential NW:  Score = " << nw_affine.score << ", Time = " << nw_affine.time << " ms\n";
+    std::cout << "\n=== Alignment Comparison, n = " << seqs.A.size() << " ===\n";
+    std::cout << "Times in ms, CPU:" << cpu_st.time << " GPU:" << gpu_st.time << std::endl;
+    
+    //std::cout << "Sequential NW:  Score = " << nw_affine.score << ", Time = " << nw_affine.time << " ms\n";
     std::cout << "Gotoh (CPU):    Score = " << cpu_st.score << ", Time = " << cpu_st.time << " ms\n";
     std::cout << "Gotoh (GPU):    Score = " << gpu_st.score << ", Time = " << gpu_st.time << " ms\n";
-
+    
     std::cout << "\n=== Speedups ===\n";
     std::cout << "GPU vs CPU:     " << speedup_gpu_vs_cpu << "x\n";
-    std::cout << "GPU vs NW:      " << speedup_seq_vs_gpu << "x\n";
-    std::cout << "CPU vs NW:      " << speedup_seq_vs_cpu << "x\n";
+    //std::cout << "GPU vs NW:      " << speedup_seq_vs_gpu << "x\n";
+    //std::cout << "CPU vs NW:      " << speedup_seq_vs_cpu << "x\n";
+    
 }
 
 int main() {
@@ -156,22 +163,26 @@ int main() {
         {"TTTTTTT", "TTTCTTT"},
         {"CGTACGT", "CGTTCGT"},
         {"GGCATGC", "GGC-TGC"}
-    };*/
+    };
+    for (int n = 100; n < 1000; n += 100) {
+        std::string A(n, 'A');
+        for (int i = 0; i < n; i += 4) A[i] = 'C';
 
-    std::string A(5000, 'A');
-    for (int i = 0; i < 5000; i += 4) A[i] = 'C';
+        std::string B(n, 'A');
+        for (int i = 0; i < n; i += 5) B[i] = 'G';
 
-    std::string B(5000, 'A');
-    for (int i = 0; i < 5000; i += 5) B[i] = 'G';
+        //std::string A = fastaReader("seqA.fasta");
+        //std::string B = fastaReader("seqB.fasta");
+        Strings seqs = {A,B};
 
-    //std::string A = fastaReader("seqA.fasta");
-    //std::string B = fastaReader("seqB.fasta");
-    std::vector<Strings> seqs = {{A,B}};
 
-    int openGap = 10;
-    int extendGap = 1;
-    int match = 3;
-    int mismatch = -1;
+        int openGap = 3;
+        int extendGap = 1;
+        int match = 3;
+        int mismatch = -1;
+        testCPUandGPU(seqs, openGap, extendGap, match, mismatch);
+    }
+     */
 
     //std::cout << "Running CPU tests:\n";
     //BatchTestCPU(seqs, openGap, extendGap, match, mismatch);
@@ -180,9 +191,29 @@ int main() {
     //BatchTestGPU(seqs, openGap, extendGap, match, mismatch);
 
     // running every pair of sequences on CPU and GPU to compare runtimes
-    for (int i = 0; i < seqs.size(); i++) {
-        testCPUandGPU(seqs[i], openGap, extendGap, match, mismatch);
-    }
+    //for (int i = 0; i < seqs.size(); i++) {
+    //    testCPUandGPU(seqs[i], openGap, extendGap, match, mismatch);
+    //}
+
+    std::string file = "uniref50.fasta";
+    int openGap = 5;
+    int extendGap = 1;
+    int match = 3;
+    int mismatch = -1;
+    int length = 50000;
+
+    //for (int i = 0; i < 50; i++) {
+    std::string seq1 = getFastaSequenceByIndex(file, 1);
+    std::string seq2 = getFastaSequenceByIndex(file, 2); 
+
+    string seqA = seq1.substr(0, length); 
+    string seqB = seq2.substr(0, length);
+    //std::cout << seq1 << std::endl;
+    //std::cout << seq2 << std::endl;
+    Strings seqs = {seqA,seqB};
+        
+    testCPUandGPU(seqs, openGap, extendGap, match, mismatch);
+    //}
 
     return 0;
 }

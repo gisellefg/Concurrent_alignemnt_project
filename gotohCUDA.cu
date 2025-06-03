@@ -202,7 +202,12 @@ AlignmentMatrices gotoch_align_cuda(const string&A, const string &B, int openGap
                                          openGap, extendGap, d_submat,
                                          d_M, d_I, d_D,
                                          d_traceM, d_traceI, d_traceD);
-
+    
+        cudaError_t err = cudaGetLastError();
+        if (err != cudaSuccess) {
+            std::cerr << "CUDA kernel launch error at diag " << diag << ": " << cudaGetErrorString(err) << std::endl;
+            exit(1);
+        }
 
         cudaDeviceSynchronize();
 
@@ -216,9 +221,6 @@ AlignmentMatrices gotoch_align_cuda(const string&A, const string &B, int openGap
     cudaMemcpy(hTraceM.data(), d_traceM, size * sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(hTraceI.data(), d_traceI, size * sizeof(int), cudaMemcpyDeviceToHost);
     cudaMemcpy(hTraceD.data(), d_traceD, size * sizeof(int), cudaMemcpyDeviceToHost);
-
-
-    // compare values of different matrices
 
 
 
@@ -260,6 +262,8 @@ AlignmentResult gotoch_align_result(const std::string& A, const std::string& B,
     int score;
     char chosen;
 
+    // compare values of different matrices
+
     if (score_M >= score_I && score_M >= score_D) {
         score = score_M;
         chosen = 'M';
@@ -273,9 +277,9 @@ AlignmentResult gotoch_align_result(const std::string& A, const std::string& B,
     
     char current = chosen;
 
-    //TO DO: add traceback logic as in CPU
     std::string A_aligned, B_aligned;
 
+    // traceback logic as seen in the CPU implementation
     int i = m, j = n;
 
     while (i > 0 || j > 0) {
@@ -341,8 +345,11 @@ ScoreTime alignGPU(const std::string& A, const std::string& B,
             const int openGap, const int extendGap,
             const int match, const int mismatch) {
 
-    vector<vector<int>> submat(128, vector<int>(128, mismatch)); // initialize submatrix
-    for (char c : {'A','C','G','T'}) submat[c][c] = match;
+    std::string amino_acids = "ARNDCQEGHILKMFPSTWYVBZXOUJ";
+
+    vector<vector<int>> submat(128, vector<int>(128, mismatch)); 
+    for (char c : amino_acids) submat[c][c] = match;
+    //for (char c : {'A','C','G','T'}) submat[c][c] = match; # DNA
 
     cudaEvent_t gpu_start, gpu_end;
     cudaEventCreate(&gpu_start);
