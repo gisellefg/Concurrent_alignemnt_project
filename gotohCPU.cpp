@@ -21,7 +21,7 @@ struct Alignment {
 enum Matrix { matM, matI, matD }; //i use this later to mark which DP part is being done in the backtracking
 /*matM is matrix for (mis)match, matI is inserttion (so gap in B) and matD is deletion which marks gap in A*/
 
-/*
+
 // i commented this and copied it into main.cpp
 
 
@@ -36,7 +36,7 @@ string fastaReader(const string &path) {
     }
     return seq;
 }
-*/
+
 
 class Threads {
     vector<thread> workers;
@@ -321,7 +321,7 @@ ScoreTime alignCPU(const std::string& A, const std::string& B,
     return res;
 }
 
-/*
+
 //i used GPT to give me simple main function 
 int main(int argc, char** argv) {
     if (argc < 3) {
@@ -355,4 +355,4 @@ int main(int argc, char** argv) {
 
     return 0;
 }
-    */
+    

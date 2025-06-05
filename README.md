@@ -11,6 +11,10 @@ GPU compilation and running: (remember to uncomment main function and fastaReade
 /usr/local/cuda/bin/nvcc gotohCUDA.cu -o gotohCUDA -arch=sm_75
 ./gotohCUDA 
 
+For linear space GPU:
+/usr/local/cuda/bin/nvcc gotoh_linearspace.cu -o gotoh_linearspace -arch=sm_75
+
+ 
 
 Running main.cpp (runs GPU and CPU at the same time and compares)
 

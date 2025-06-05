@@ -19,7 +19,7 @@ using namespace std;
 #define IDX(i, j, w) ((i) * (w) + (j))
 
 
-/*
+
 
 //this function is a function to read fasta file, i used GPT to write it
 string fastaReader(const string &path) {
@@ -33,7 +33,7 @@ string fastaReader(const string &path) {
     return seq;
 }
 
-*/
+
 
 //For comparing results 
 struct AlignmentResult {
@@ -218,11 +218,6 @@ AlignmentMatrices gotoch_align_cuda(const string&A, const string &B, int openGap
     cudaMemcpy(hTraceD.data(), d_traceD, size * sizeof(int), cudaMemcpyDeviceToHost);
 
 
-    // compare values of different matrices
-
-
-
-
     //Free CUDA memory
     cudaFree(d_A);
     cudaFree(d_B);
@@ -366,7 +361,7 @@ ScoreTime alignGPU(const std::string& A, const std::string& B,
 
 
 
-/*
+
 
 
 int main() {
@@ -413,7 +408,7 @@ int main() {
 }
 
     
-*/
+
 
 
   
