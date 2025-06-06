@@ -346,8 +346,6 @@ ScoreTime alignCPU(const std::string& A, const std::string& B,
 
 int main() {
 
-
-
     //testing code with input strings
     std::string A = fastaReader("seqA.fasta");
     std::string B = fastaReader("seqB.fasta");
