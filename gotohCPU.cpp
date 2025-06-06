@@ -143,8 +143,14 @@ Alignment gotoh_align(
     }
 
     //here is first put a number for numthreads but after googling there is a hardware concurrency default so Klara feel free to override this to test diff thread counts
-    const int num_threads = thread::hardware_concurrency();
-    Threads pool(num_threads);
+    int max_threads = thread::hardware_concurrency();
+    if (max_threads == 0) {
+        max_threads = 8; // fallback to 2 threads if hardware concurrency can't be detected
+    }
+    Threads pool(max_threads);
+    //std::cout << "thread count " << max_threads << std::endl;
+
+    
 
     //here i deal wiht the anti diagonals (so cells where i+j is diagonal)
     for (int diag = 1; diag <= m + n; diag++) {
@@ -153,6 +159,7 @@ Alignment gotoh_align(
         int total = i_max - i_min + 1;//nb of cells on that diagonal
         if (total <= 0) continue;
 
+        int num_threads = max_threads;
         CountdownLatch latch(num_threads);
         //now i divide total into numthread chunks plus some will get an extra cell if rem is not 0
         int base = total / num_threads;
@@ -305,8 +312,10 @@ ScoreTime alignCPU(const std::string& A, const std::string& B,
 
 
     // initiliaize submatrix
+    std::string amino_acids = "ARNDCQEGHILKMFPSTWYVBZXOUJ";
     vector<vector<int>> submat(128, vector<int>(128, mismatch)); 
-    for (char c : {'A','C','G','T'}) submat[c][c] = match;
+    for (char c : amino_acids) submat[c][c] = match;
+    //for (char c : {'A','C','G','T'}) submat[c][c] = match;
 
     // take time
     auto cpu_start = std::chrono::high_resolution_clock::now();
