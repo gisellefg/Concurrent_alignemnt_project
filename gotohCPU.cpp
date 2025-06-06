@@ -25,6 +25,7 @@ enum Matrix { matM, matI, matD }; //i use this later to mark which DP part is be
 // i commented this and copied it into main.cpp
 
 
+/*
 //this function is a function to read fasta file, i used GPT to write it
 string fastaReader(const string &path) {
     ifstream in(path);
@@ -37,6 +38,7 @@ string fastaReader(const string &path) {
     return seq;
 }
 
+*/
 
 class Threads {
     vector<thread> workers;
@@ -330,7 +332,7 @@ ScoreTime alignCPU(const std::string& A, const std::string& B,
     return res;
 }
 
-
+/*
 //i used GPT to give me simple main function 
 int main(int argc, char** argv) {
     if (argc < 3) {
@@ -364,4 +366,5 @@ int main(int argc, char** argv) {
 
     return 0;
 }
-    
+
+*/

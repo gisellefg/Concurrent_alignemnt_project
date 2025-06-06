@@ -20,7 +20,7 @@ using namespace std;
 
 
 
-
+/*
 //this function is a function to read fasta file, i used GPT to write it
 string fastaReader(const string &path) {
     ifstream in(path);
@@ -33,7 +33,7 @@ string fastaReader(const string &path) {
     return seq;
 }
 
-
+*/
 
 //For comparing results 
 struct AlignmentResult {
@@ -373,7 +373,7 @@ ScoreTime alignGPU(const std::string& A, const std::string& B,
 
 
 
-
+/*
 
 
 int main() {
@@ -423,7 +423,7 @@ int main() {
 
 
 
-  
+  */
 
     
 

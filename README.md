@@ -11,10 +11,14 @@ GPU compilation and running: (remember to uncomment main function and fastaReade
 /usr/local/cuda/bin/nvcc gotohCUDA.cu -o gotohCUDA -arch=sm_75
 ./gotohCUDA 
 
-For linear space GPU:
-/usr/local/cuda/bin/nvcc gotoh_linearspace.cu -o gotoh_linearspace -arch=sm_75
+For linear space CPU:
+/usr/local/cuda/bin/nvcc gotoh_linearspace_CPU.cu fasta_reader.cpp -o gotoh_linearspace_CPU -arch=sm_75
 
- 
+
+For linear space GPU:
+/usr/local/cuda/bin/nvcc gotoh_linearspace_GPU.cu fasta_reader.cpp -o gotoh_linearspace_GPU -arch=sm_75
+
+
 
 Running main.cpp (runs GPU and CPU at the same time and compares)
 
@@ -28,6 +32,7 @@ Compile the benchmark with:
  nvcc -std=c++17 -O3 -I$CUDA_HOME/include -L$CUDA_HOME/lib64 gotohCUDA.cu main.cpp gotohCPU.cpp -o benchmark
 Run the program with
  ./benchmark
+
 
 Example output:
 Scores (CPU/GPU): 208  208 Times taken: 14.2469 ms (CPU) 8.09587 ms (GPU). Speedup: 1.75978
