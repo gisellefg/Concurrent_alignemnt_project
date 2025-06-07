@@ -55,4 +55,4 @@ Example output:
     GPU vs CPU:     1.57886x
 
 
-For detailed explanation of the algorithm, implementation, and results, see the accompanying report: DNA_sequence_alignment.pdf.
+For detailed explanation of the algorithm, implementation, and results, see the accompanying report: Project_report.pdf.
