@@ -46,7 +46,13 @@ Run the program with
 
 
 Example output:
-Scores (CPU/GPU): 208  208 Times taken: 14.2469 ms (CPU) 8.09587 ms (GPU). Speedup: 1.75978
+
+    === Alignment Comparison, n = 5000 ===
+    Gotoh (CPU):    Score = -1681, Time = 381.481 ms
+    Gotoh (GPU):    Score = -1681, Time = 241.618 ms
+    
+    === Speedups ===
+    GPU vs CPU:     1.57886x
 
 
 For detailed explanation of the algorithm, implementation, and results, see the accompanying report: DNA_sequence_alignment.pdf.
