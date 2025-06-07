@@ -1,9 +1,14 @@
-CPU code:
+This project implements the Gotoh algorithm for pairwise DNA sequence alignment using affine gap penalties. It includes multithreaded CPU, CUDA-based GPU, and linear space variants that allow alignment of longer sequences.
 
-first compiled with g++ -std=c++17 -03 gotohCPU.cpp -pthread -o gotoh
-then it is run with ./gotoh seqA.fasta seqB.fasta n
+To compile and run the CPU version, use:
 
-here for n u can put any number u want i tested with 4
+    g++ -std=c++17 -03 gotohCPU.cpp -pthread -o gotoh
+
+Then run the program with:
+
+    ./gotoh seqA.fasta seqB.fasta n
+
+Here, `seqA.fasta` and `seqB.fasta` are input sequences in FASTA format. Replace `n` with the number of threads you want to use (e.g., 4).
 
 
 GPU compilation and running: (remember to uncomment main function and fastaReader)
