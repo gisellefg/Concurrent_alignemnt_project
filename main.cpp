@@ -135,8 +135,7 @@ void testCPUandGPU(const Strings& seqs, const int open, const int extend, const 
         // Speedups
         float speedup_gpu_vs_cpu = cpu_st.time / gpu_st.time;
         std::cout << "\n=== Alignment Comparison, n = " << seqs.A.size() << " ===\n";
-        std::cout << "Times in ms, CPU:" << cpu_st.time << " GPU:" << gpu_st.time << std::endl;
-        
+
         std::cout << "Gotoh (CPU):    Score = " << cpu_st.score << ", Time = " << cpu_st.time << " ms\n";
         std::cout << "Gotoh (GPU):    Score = " << gpu_st.score << ", Time = " << gpu_st.time << " ms\n";
         
