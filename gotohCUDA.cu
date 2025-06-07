@@ -122,7 +122,7 @@ __global__ void gotohAUX2(int diag, int m, int n, const char* A, const char* B,
 
 AlignmentMatrices gotoch_align_cuda(const string&A, const string &B, int openGap, int extendGap, const std::vector<std::vector<int>> &submat) {
     
-    const int THREADS_PER_BLOCK = 128;
+    const int THREADS_PER_BLOCK = 64;
     const int NEG_INF = numeric_limits<int>::min()/2;
     
     char *d_A, *d_B;
