@@ -115,7 +115,8 @@ Alignment gotoh_align(
     const string &B,
     int openGap,
     int extendGap,
-    const vector<vector<int>> &submat
+    const vector<vector<int>> &submat,
+    int n_threads
 ) {
     const int m = A.size(), n = B.size();//seq lengths
     const int NEG_INF = numeric_limits<int>::min()/2;//i googled how to put a neg inf to mark impossible state
@@ -145,7 +146,7 @@ Alignment gotoh_align(
     }
 
     //here is first put a number for numthreads but after googling there is a hardware concurrency default so Klara feel free to override this to test diff thread counts
-    int max_threads = thread::hardware_concurrency();
+    int max_threads = n_threads;
     if (max_threads == 0) {
         max_threads = 8; // fallback to 2 threads if hardware concurrency can't be detected
     }
@@ -310,7 +311,7 @@ Alignment gotoh_align(
 // the function calculates, in milliseconds, how long finding the alignment takes
 ScoreTime alignCPU(const std::string& A, const std::string& B,
     const int openGap, const int extendGap,
-    const int match, const int mismatch) {
+    const int match, const int mismatch, int n_threads) {
 
 
     // initiliaize submatrix
@@ -321,7 +322,7 @@ ScoreTime alignCPU(const std::string& A, const std::string& B,
 
     // take time
     auto cpu_start = std::chrono::high_resolution_clock::now();
-    Alignment result = gotoh_align(A, B, openGap, extendGap, submat);
+    Alignment result = gotoh_align(A, B, openGap, extendGap, submat, n_threads);
     auto cpu_end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> cpu_time = cpu_end - cpu_start;
     //std::cout << "CPU Time: " << cpu_time.count() << " s\n";

@@ -7,6 +7,6 @@
 
 ScoreTime alignCPU(const std::string& A, const std::string& B,
     const int openGap, const int extendGap,
-    const int match, const int mismatch);
+    const int match, const int mismatch, int n_threads);
 
 #endif // GOTOHCPU_H

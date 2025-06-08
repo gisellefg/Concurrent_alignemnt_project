@@ -63,6 +63,7 @@
         "variant": "cpp",
         "cinttypes": "cpp",
         "future": "cpp",
-        "gotohcudalinearspace": "cpp"
+        "gotohcudalinearspace": "cpp",
+        "unordered_set": "cpp"
     }
 }
