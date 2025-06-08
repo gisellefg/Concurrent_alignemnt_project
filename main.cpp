@@ -6,12 +6,18 @@
 #include <thread>
 #include "gotohCPU.h"
 #include "gotohCUDA.h"
+#include "gotoh_linearspace.h"
 #include "types.h"
 #include <chrono>
 #include "fasta_reader.cpp"
+<<<<<<< HEAD
 #include <iostream>
 #include <random>
 #include <unordered_set>
+=======
+#include <cuda_runtime.h>
+#include "gotoh_linearspace.h"
+>>>>>>> origin/main
 using namespace std;
 
 string fastaReader(const string &path) {
@@ -121,6 +127,29 @@ ScoreTime alignNW_Affine(const std::string& A, const std::string& B,
     return ScoreTime(M[m][n], time_ms);
 }
 
+ScoreTime alignlinearCPU(const std::string& A, const std::string& B,
+                         int openGap, int extendGap, int match, int mismatch) {
+    std::vector<std::vector<int>> submat(128, std::vector<int>(128, mismatch));
+    for (char c : {'A', 'C', 'G', 'T'}) submat[c][c] = match;
+
+    cudaEvent_t start, end;
+    cudaEventCreate(&start);
+    cudaEventCreate(&end);
+    cudaEventRecord(start);
+
+    auto [M, I, D] = compute_linear_space_cpu(A, B, openGap, extendGap, submat);
+
+    cudaEventRecord(end);
+    cudaEventSynchronize(end);
+
+    float time_ms;
+    cudaEventElapsedTime(&time_ms, start, end);
+    cudaEventDestroy(start);
+    cudaEventDestroy(end);
+
+    int score = std::max({M.back(), I.back(), D.back()});
+    return ScoreTime(score, time_ms);
+}
 
 
 // compare the CPU and GPU run times for ONE pair of sequences (not a batch test)
@@ -141,7 +170,38 @@ void testCPUandGPU(const Strings& seqs, const int open, const int extend, const 
         
         std::cout << "\n=== Speedups ===\n";
         std::cout << "GPU vs CPU:     " << speedup_gpu_vs_cpu << "x\n";
+/*
+void testCPUandGPU(const Strings& seqs, const int open, const int extend, const int match, const int mismatch) {
+    // get CPU run time
+    //std::cout << "running cpu" << std::endl;
+    ScoreTime cpu_st = alignCPU(seqs.A, seqs.B, open, extend, match, mismatch);
+    // get GPU run time
+    //std::cout << "running gpu" << std::endl;
+    //ScoreTime gpu_st = alignGPU(seqs.A, seqs.B, open, extend, match, mismatch);
+    // get sequential run time
+    //std::cout << "running sequential" << std::endl;
+    //ScoreTime nw_affine = alignNW_Affine(seqs.A, seqs.B, match, mismatch, open, extend);
+
+
+    // Speedups
+    //float speedup_gpu_vs_cpu = cpu_st.time / gpu_st.time;
+    //float speedup_seq_vs_gpu = nw_affine.time / gpu_st.time;
+    //float speedup_seq_vs_cpu = nw_affine.time / cpu_st.time;
+
+    //std::cout << "\n=== Alignment Comparison, n = " << seqs.A.size() << " ===\n";
+    //std::cout << "Times in ms, CPU:" << cpu_st.time << " GPU:" << gpu_st.time << std::endl;
+    
+    //std::cout << "Sequential NW:  Score = " << nw_affine.score << ", Time = " << nw_affine.time << " ms\n";
+    std::cout << "Gotoh (CPU):    Score = " << cpu_st.score << ", Time = " << cpu_st.time << " ms\n";
+    std::cout << "Gotoh (GPU):    Score = " << gpu_st.score << ", Time = " << gpu_st.time << " ms\n";
+    
+    std::cout << "\n=== Speedups ===\n";
+    //std::cout << "GPU vs CPU:     " << speedup_gpu_vs_cpu << "x\n";
+    //std::cout << "GPU vs NW:      " << speedup_seq_vs_gpu << "x\n";
+    //std::cout << "CPU vs NW:      " << speedup_seq_vs_cpu << "x\n";
+    
 }
+*/
 
 // compare the CPU and GPU run times for ONE pair of sequences (not a batch test)
 double testThreadCount(const Strings& seqs, const int open, const int extend, const int match, const int mismatch, int n_threads) {

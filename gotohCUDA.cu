@@ -19,8 +19,8 @@ using namespace std;
 #define IDX(i, j, w) ((i) * (w) + (j))
 
 
-/*
 
+/*
 //this function is a function to read fasta file, i used GPT to write it
 string fastaReader(const string &path) {
     ifstream in(path);
@@ -420,10 +420,10 @@ int main() {
 }
 
     
-*/
 
 
-  
+
+  */
 
     
 

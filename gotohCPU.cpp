@@ -21,10 +21,11 @@ struct Alignment {
 enum Matrix { matM, matI, matD }; //i use this later to mark which DP part is being done in the backtracking
 /*matM is matrix for (mis)match, matI is inserttion (so gap in B) and matD is deletion which marks gap in A*/
 
-/*
+
 // i commented this and copied it into main.cpp
 
 
+/*
 //this function is a function to read fasta file, i used GPT to write it
 string fastaReader(const string &path) {
     ifstream in(path);
@@ -36,6 +37,7 @@ string fastaReader(const string &path) {
     }
     return seq;
 }
+
 */
 
 class Threads {
@@ -365,4 +367,5 @@ int main(int argc, char** argv) {
 
     return 0;
 }
-    */
+
+*/
